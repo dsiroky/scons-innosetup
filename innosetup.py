@@ -22,7 +22,12 @@ def inno_scanner(node, env, path):
     # get sources
     sources = []
     for match in re_source.finditer(contents):
-        sources += glob.glob(match.group(1))
+        pat = match.group(1)
+        if ("*" in pat) or ("?" in pat):
+            # NOTE: files must exist
+            sources += glob.glob(match.group(1))
+        else:
+            sources += [pat]
     return sources
 
 #########################################################################
