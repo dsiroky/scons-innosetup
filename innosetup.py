@@ -26,6 +26,8 @@ def inno_scanner(node, env, path):
         files = glob.glob(pat)
         if len(files) == 0:
             sources += [pat]
+        else:
+            sources += files
     return sources
 
 #########################################################################
