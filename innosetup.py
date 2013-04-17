@@ -1,5 +1,6 @@
 import glob
 import re
+import os
 
 import SCons.Builder
 import SCons.Action
@@ -8,7 +9,18 @@ import SCons.Node.FS
 
 #########################################################################
 
-re_source = re.compile(r"source:\s*\"(.*?)\"", flags=re.I)
+re_source = re.compile(r"source:\s*\"(.*?)\"(.*)", flags=re.I)
+
+#########################################################################
+
+def recursesubdirs(pat):
+    files = []
+    for item in glob.glob(pat):
+        for dn, subdirs, dfiles in os.walk(item):
+            for fn in dfiles:
+                fn = os.path.join(dn, fn)
+                files.append(fn)
+    return files
 
 #########################################################################
 
@@ -23,11 +35,14 @@ def inno_scanner(node, env, path):
     sources = []
     for match in re_source.finditer(contents):
         pat = match.group(1)
-        files = glob.glob(pat)
-        if len(files) == 0:
-            sources += [pat]
+        if "recursesubdirs" in match.group(2):
+            files = recursesubdirs(pat)
         else:
-            sources += files
+            files = glob.glob(pat)
+            if len(files) == 0:
+                sources += [pat]
+            else:
+                sources += files
     return sources
 
 #########################################################################
